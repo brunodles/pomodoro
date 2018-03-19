@@ -6,21 +6,21 @@ WORK_SOUND="work.mp3"
 main() {
   echo "">nohup.out
   case $1 in
-    short)
+    short|s)
       echo "Short break"
       changeLeds '{"gpio0": 0, "gpio2": 1}'
       sleepT 5
       play $WORK_SOUND
       notify "Back to work"
       ;;
-    long)
+    long|l)
       echo "Long break"
       changeLeds '{"gpio0": 0, "gpio2": 1}'
       sleepT 10
       play $WORK_SOUND
       notify "Back to work"
     ;;
-    work)
+    work|w)
       echo "Pomodoro"
       changeLeds '{"gpio0": 1, "gpio2": 0}'
       sleepT 25
@@ -30,7 +30,33 @@ main() {
     setup)
       sudo apt-get install sox
       sudo apt-get install sox libsox-fmt-all
-      ;;
+    ;;
+    test)
+      echo "Test"
+      play $WORK_SOUND
+      notify "Is it working"
+    ;;
+    *)
+      cat <<-HELP
+Pomodoro
+
+Usage
+$0 <command>
+
+Available Commands
+
+  short		make a short break, 5 minutes
+  long		make a long break, 10 minutes
+  work		work, 25 minutes
+  setup		install tools
+  test		show test notification
+
+Samples:
+$0 work
+$0 short
+
+HELP
+    ;;
   esac
 }
 
