@@ -16,21 +16,21 @@ main() {
       echo "Short break"
       remoteState '{"id":"s", "type": "break", "duration": 5, "name": "Short break" }'
       sleepT 5
-      play $WORK_SOUND
+      myPlay $WORK_SOUND
       notify "Back to work"
       ;;
     long|l)
       echo "Long break"
       remoteState '{"id":"l", "type": "break", "duration": 10, "name": "Long break" }'
       sleepT 10
-      play $WORK_SOUND
+      myPlay $WORK_SOUND
       notify "Back to work"
     ;;
     work|w)
       echo "Pomodoro"
       sleepT 25
       remoteState '{"id":"w", "type": "work", "duration": 25, "name": "Pomodoro" }'
-      play $PAUSE_SOUND
+      myPlay $PAUSE_SOUND
       notify "Make a break"
     ;;
     setup)
@@ -39,7 +39,7 @@ main() {
     ;;
     test)
       echo "Test"
-      play $WORK_SOUND
+      myPlay $WORK_SOUND
       notify "Is it working"
     ;;
     *)
@@ -111,8 +111,8 @@ notify(){
   notify-send -i "$(pwd)/icon.png" -u critical "Pomodoro" "$@"
 }
 
-play() {
-  nohup play "$@" &>/dev/null &
+myPlay() {
+  nohup play "$@" </dev/null >/dev/null 2>&1 &
 }
 
 main $@
