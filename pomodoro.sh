@@ -76,6 +76,7 @@ remoteState() {
 }
 
 sleepT() {
+  echo "Start time $(myDate)"
   total_duration=$(($1 * 60))
   # sleep $total_duration
   for a in `seq $total_duration`; do
@@ -113,6 +114,10 @@ notify(){
 
 myPlay() {
   nohup play "$@" </dev/null >/dev/null 2>&1 &
+}
+
+myDate() {
+  echo $(date +"%Y.%m.%d %H:%M:%S")
 }
 
 main $@
