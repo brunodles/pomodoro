@@ -1,29 +1,35 @@
 #/bin/bash
-BREAKS=50
+
+# User settings
 PAUSE_SOUND="1Up.mp3"
 WORK_SOUND="work.mp3"
+FIREBASE_USER="bruno"
+
+# Script settings
+PROGRESS_BREAKS=50
+FIREBASE_URL="https://remote-pomodoro.firebaseio.com/"
 
 main() {
   echo "">nohup.out
   case $1 in
     short|s)
       echo "Short break"
-      changeLeds '{"gpio0": 0, "gpio2": 1}'
+      remoteState '{"id":"s", "type": "break", "duration": 5, "name": "Short break" }'
       sleepT 5
       play $WORK_SOUND
       notify "Back to work"
       ;;
     long|l)
       echo "Long break"
-      changeLeds '{"gpio0": 0, "gpio2": 1}'
+      remoteState '{"id":"l", "type": "break", "duration": 10, "name": "Long break" }'
       sleepT 10
       play $WORK_SOUND
       notify "Back to work"
     ;;
     work|w)
       echo "Pomodoro"
-      changeLeds '{"gpio0": 1, "gpio2": 0}'
       sleepT 25
+      remoteState '{"id":"w", "type": "work", "duration": 25, "name": "Pomodoro" }'
       play $PAUSE_SOUND
       notify "Make a break"
     ;;
@@ -60,22 +66,13 @@ HELP
   esac
 }
 
-changeLeds() {
-  # nohup curl -s --request PUT \
-    curl -s --request PATCH \
-  --url "https://esp-ci.firebaseio.com/gpio.json" \
+remoteState() {
+#  auth=$(curl ${FIREBASE_URL}/)
+  curl -s --request PUT \
+  --url ${FIREBASE_URL}/${FIREBASE_USER}/state.json \
   --header 'cache-control: no-cache' \
   --header 'content-type: application/json' \
-  --data "$@"
-  # --data $@ &>/dev/null &
-}
-
-changeLed() {
-  nohup curl -s --request PUT \
-  --url "https://esp-ci.firebaseio.com/gpio/gpio$1.json" \
-  --header 'cache-control: no-cache' \
-  --header 'content-type: application/json' \
-  --data $2 &>/dev/null &
+  --data "$@" > /dev/null
 }
 
 sleepT() {
@@ -83,10 +80,11 @@ sleepT() {
   # sleep $total_duration
   for a in `seq $total_duration`; do
     remaining=$(($total_duration - $a))
-    current=$(($a * $BREAKS / $total_duration))
-    printf "\r$(bar $current $BREAKS)($(pct $a $total_duration)%%) remaining $(toTime $remaining)s"
-    sleep 1
+    current=$(($a * $PROGRESS_BREAKS / $total_duration))
+    printf "\r$(bar $current $PROGRESS_BREAKS)($(pct $a $total_duration)%%) remaining $(toTime $remaining)s"
+#    sleep 1
   done
+  echo
 }
 
 bar() {
