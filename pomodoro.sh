@@ -1,4 +1,5 @@
-#/bin/bash
+#!/bin/bash
+source ./utils.sh
 
 # User settings
 PAUSE_SOUND="1Up.mp3"
@@ -8,6 +9,31 @@ FIREBASE_USER="bruno"
 # Script settings
 PROGRESS_BREAKS=50
 FIREBASE_URL="https://remote-pomodoro.firebaseio.com/"
+
+
+short() {
+    echo "Short break"
+    remoteState '{"id":"s", "type": "break", "duration": 5, "name": "Short break" }'
+    sleepT 5
+    myPlay $WORK_SOUND
+    notify "Back to work"
+}
+
+long() {
+  echo "Long break"
+  remoteState '{"id":"l", "type": "break", "duration": 10, "name": "Long break" }'
+  sleepT 10
+  myPlay $WORK_SOUND
+  notify "Back to work"
+}
+
+work() {
+  echo "Pomodoro"
+  sleepT 25
+  remoteState '{"id":"w", "type": "work", "duration": 25, "name": "Pomodoro" }'
+  myPlay $PAUSE_SOUND
+  notify "Make a break"
+}
 
 main() {
   echo "">nohup.out
@@ -73,51 +99,6 @@ remoteState() {
   --header 'cache-control: no-cache' \
   --header 'content-type: application/json' \
   --data "$@" > /dev/null
-}
-
-sleepT() {
-  echo "Start time $(myDate)"
-  total_duration=$(($1 * 60))
-  # sleep $total_duration
-  for a in `seq $total_duration`; do
-    remaining=$(($total_duration - $a))
-    current=$(($a * $PROGRESS_BREAKS / $total_duration))
-    printf "\r$(bar $current $PROGRESS_BREAKS)($(pct $a $total_duration)%%) remaining $(toTime $remaining)s"
-#    sleep 1
-  done
-  echo
-}
-
-bar() {
-  result=""
-  while [ ${#result} -lt $2 ]; do
-    if [ ${#result} -lt $1 ]; then
-      result="$result#"
-    else
-      result="$result "
-    fi
-  done
-  echo "[$result]"
-}
-
-pct() {
-  echo $(($1 * 100 / $2))
-}
-
-toTime() {
-  echo "$(($1 / 60 )):$(($1 % 60))"
-}
-
-notify(){
-  notify-send -i "$(pwd)/icon.png" -u critical "Pomodoro" "$@"
-}
-
-myPlay() {
-  nohup play "$@" </dev/null >/dev/null 2>&1 &
-}
-
-myDate() {
-  echo $(date +"%Y.%m.%d %H:%M:%S")
 }
 
 main $@
